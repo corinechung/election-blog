@@ -28,6 +28,16 @@ Real Disposable Income Quarterly First, I examine the percent change in disposab
     </item>
     
     <item>
+      <title>Incumbency</title>
+      <link>http://example.org/post/incumbency/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/post/incumbency/</guid>
+      <description>In this blog post, I examine Extension #1 to see how accurate the expert predictions were in 2018. I do this by visualizing actual voteshare (seatshare) and comparing this to the predictions.
+Map of Voteshare My visualization of the predicted Republican voteshare is shown below. The more blue a district is, the greater the Democrat win was. Alternatively, the more red a district is, the stronger the Republican win was. A purple categorization is indicative of a toss up.</description>
+    </item>
+    
+    <item>
       <title>Polling</title>
       <link>http://example.org/post/polling/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

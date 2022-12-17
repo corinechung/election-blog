@@ -1,0 +1,114 @@
+---
+title: Incumbency
+author: ''
+date: ''
+slug: []
+categories: []
+tags: []
+---
+```{r libraries, include = FALSE}
+# hide
+knitr::opts_chunk$set(echo = FALSE)
+# libraries
+library(tidyverse)
+library(ggplot2)
+library(blogdown)
+library(stargazer)
+library(readr)
+library(lubridate)
+library(rmapshaper)
+library(janitor)
+library(leaflet)
+library(stringr)
+library(ggthemes)
+library(gridExtra)
+library(usdata)
+library(ggrepel)
+library(usmap)
+library(stats)
+library(magrittr)
+library(dplyr)
+library(sf)
+library(geojsonio)
+library(htmlTable)
+```
+
+```{r code setup, include = FALSE}
+expert <- read.csv("expert_rating.csv")
+incumb <- read.csv("incumb_dist_1948-2020 (3).csv") %>%
+  mutate(district=as.character(district_num))
+
+joined<-left_join(incumb, expert, by=c('year','state','district'='district'))
+
+get_congress_map <- function(cong=113) 
+  {
+  tmp_file <- tempfile()
+  tmp_dir  <- tempdir()
+  zp <- sprintf("http://cdmaps.polisci.ucla.edu/shp/districts%03i.zip",cong)
+  download.file(zp, tmp_file)
+  unzip(zipfile = tmp_file, exdir = tmp_dir)
+  fpath <- paste(tmp_dir, sprintf("districtShapes/districts%03i.shp",cong), sep = "/")
+  st_read(fpath)
+  }
+
+cd114 <- get_congress_map(114)
+
+districts_simp <- rmapshaper::ms_simplify(cd114, keep = 0.01)
+data <- left_join(joined, districts_simp, by=c('state'='STATENAME','district'='DISTRICT'))%>%
+  mutate(Incumbent_party = ifelse(RepStatus == 'Incumbent','Rep','Dem'))
+data <- data %>%
+  mutate(Avg_rating_code=case_when(
+    avg_rating < 1.5~ 'Solid Dem',
+    avg_rating >= 1.5 & avg_rating < 2.5 ~ 'Likely Dem',
+    avg_rating >= 2.5 & avg_rating < 3.5  ~ 'Lean Dem',
+    avg_rating >= 3.5 & avg_rating < 4.5 ~ 'Toss up',
+    avg_rating >= 4.5 & avg_rating < 5.5 ~ 'Lean Rep',
+    avg_rating >= 5.5 & avg_rating < 6.5 ~ 'Likely Rep',
+    avg_rating >= 6.5 ~ 'Solid Rep',
+  ), Avg_rating_code=factor(Avg_rating_code,
+     levels=c('Solid Dem','Likely Dem','Lean Dem', 'Toss up','Lean Rep','Likely Rep','Solid Rep')))
+
+data_18 <- data %>%
+  filter(year==2018)
+```
+
+In this blog post, I examine Extension #1 to see how accurate 
+the expert predictions were in 2018. I do this by visualizing actual voteshare (seatshare) and comparing this to the predictions.
+
+# Map of Voteshare
+
+My visualization of the predicted Republican voteshare is shown below. The more blue a district is, the greater the Democrat win was. Alternatively, the more red a district is, the stronger the Republican win was. A purple categorization is indicative of a toss up.
+
+```{r map of voteshare, message=FALSE, warning=FALSE}
+ggplot() + 
+  geom_sf(data = data_18, aes(fill=RepVotesMajorPercent, geometry=geometry),
+          inherit.aes=FALSE, alpha=0.9) + 
+  scale_fill_gradient(low = "blue", high = "red", limits = c(0,90)) +
+  coord_sf(xlim = c(-175, -70), ylim = c(25, 75), expand = FALSE) +  
+  theme_void() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+  labs(fill = 'Republican Voteshare',title = 'Republican Voteshare by District for the 2018 Election')
+```
+
+# Actual Results
+
+I then compare these voteshare values to the actual results.
+
+```{r compare, message=FALSE,warning=FALSE}
+data_18 %>%
+  filter(!is.na(avg_rating)) %>%
+  group_by(Avg_rating_code) %>%
+  summarise('Dem_Win' = sum(winner_party == 'D'),
+            'Rep_Win' = sum(winner_party == 'R'),
+            Dem_pct = Dem_Win/(Dem_Win + Rep_Win),
+            Rep_pct = Dem_Win/(Dem_Win + Rep_Win)) %>%
+  mutate(across(where(is.numeric), round, 3)) %>%
+  htmlTable(title = 'Results')
+```
+
+The table shows that expert predictions based on incumbency status were relatively accurate. Disregarding the 28 toss-up races, only 5 out of the 107 other races resulted in the other party winning the election - 3 of these were Democratic wins in Lean Republican districts and 3 of these were Democratic wins in likely Republican districts.

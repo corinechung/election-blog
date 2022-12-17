@@ -72,7 +72,7 @@ Below is the mean out-of-sample residuals, which validates our model:
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-8-1.png" width="70%" style="display: block; margin: auto;" />
 
 ```
-## [1] 1.159056
+## [1] 1.129218
 ```
 
 Next, I examine the percent change in unemployment rate and how that correlates with the percentage of the votes that the incumbent party receives for each election year from 1964 to 2020.
@@ -124,5 +124,5 @@ Below is the mean out-of-sample residuals:
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="70%" style="display: block; margin: auto;" />
 
 ```
-## [1] 1.084569
+## [1] 1.020659
 ```
