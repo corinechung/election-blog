@@ -79,7 +79,7 @@ the expert predictions were in 2018. I do this by visualizing actual voteshare (
 
 My visualization of the predicted Republican voteshare is shown below. The more blue a district is, the greater the Democrat win was. Alternatively, the more red a district is, the stronger the Republican win was. A purple categorization is indicative of a toss up.
 
-```{r map of voteshare, message=FALSE, warning=FALSE}
+```{r map of voteshare}
 ggplot() + 
   geom_sf(data = data_18, aes(fill=RepVotesMajorPercent, geometry=geometry),
           inherit.aes=FALSE, alpha=0.9) + 
@@ -99,7 +99,7 @@ ggplot() +
 
 I then compare these voteshare values to the actual results.
 
-```{r compare, message=FALSE,warning=FALSE}
+```{r compare}
 data_18 %>%
   filter(!is.na(avg_rating)) %>%
   group_by(Avg_rating_code) %>%
