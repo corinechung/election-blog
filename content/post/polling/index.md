@@ -39,6 +39,7 @@ Though I believe that both methods have their merits, I believe that the Economi
 First I examine the variations in polls. As we saw, FiveThirtyEight has a detailed ranking of specific polling agencies and their respective polls. To better understand poll variation, I examine the proportion of races called correctly for all of the pollsters that have been ranked by FiveThirtyEight. 
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" />
+
 I do the same for the proportion of missed races outside of each pollster's margin of error. 
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" />

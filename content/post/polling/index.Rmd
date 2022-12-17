@@ -74,7 +74,7 @@ joined_df <- left_join(popvote, rdi_clean, by = "year") %>%
 
 First I examine the variations in polls. As we saw, FiveThirtyEight has a detailed ranking of specific polling agencies and their respective polls. To better understand poll variation, I examine the proportion of races called correctly for all of the pollsters that have been ranked by FiveThirtyEight. 
 
-```{r, message = FALSE}
+```{r message=FALSE}
 hist(
   rankings$`Races Called Correctly`,
   freq = TRUE,
@@ -87,6 +87,7 @@ hist(
   cex.axis = 0.8 
 )
 ```
+
 I do the same for the proportion of missed races outside of each pollster's margin of error. 
 
 ```{r, message = FALSE}
