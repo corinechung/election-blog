@@ -6,3 +6,130 @@ slug: []
 categories: []
 tags: []
 ---
+```{r setup, include=FALSE}
+# Hiding all code output
+knitr::opts_chunk$set(echo = FALSE)
+# Loading libraries
+library(tidyverse)
+library(sf)
+library(plotly)
+# load usmap
+# install.packages('plot_usmap')
+library(usmap)
+h <- read_csv("house party vote share by district 1948-2020.csv")
+
+## make map of vote share by state and CD
+
+# start with 114th congress - 2014 election
+# required packages 
+require(tidyverse)
+require(ggplot2)
+require(sf)
+
+get_congress_map <- function(cong=114) {
+  tmp_file <- tempfile()
+  tmp_dir  <- tempdir()
+  zp <- sprintf("https://cdmaps.polisci.ucla.edu/shp/districts114.zip",cong)
+  download.file(zp, tmp_file)
+  unzip(zipfile = tmp_file, exdir = tmp_dir)
+  fpath <- paste(tmp_dir, sprintf("districtShapes/districts114.shp",cong), sep = "/")
+  st_read(fpath)
+}
+
+# load 114th congress
+cd114 <- get_congress_map(114)
+
+# load 114th congress
+#cd114 <- st_read("districtShapes/districts114.shp", quiet = T)
+
+# select specific state 
+cd114_mi <- cd114 %>% 
+            filter(STATENAME=="Michigan") %>%
+            mutate(DISTRICT = as.character(DISTRICT))%>%
+            select(DISTRICT)
+
+# add data to plot - 2014 GOP party seat share
+# reload election data - h from previous exercise
+
+# filter for relevant variables
+R_2010 <- h %>%
+    filter(raceYear == 2010) %>%
+    select(raceYear, State, district_num, district_id, RepVotes, DemVotes) %>%
+  # summarize party vote share by state
+    group_by(State) %>%
+  # mutate Rep vote margin by state %>%
+    mutate(R_votemargin_st = (sum(RepVotes))/
+                            sum(RepVotes + DemVotes),
+           D_votemargin_st = (sum(DemVotes))/
+                            sum(RepVotes + DemVotes)) %>%
+  rename(state = State)
+
+states_map <- usmap::us_map()
+unique(states_map$abbr)
+
+
+R_mi_2014 <- h %>%
+    filter(raceYear == 2014, State == "Michigan") %>%
+    select(raceYear, State, district_num, RepVotesMajorPercent, DemVotesMajorPercent) %>%
+  # summarize party vote share by district
+    group_by(district_num) %>%
+    summarise(Rep_votes_pct = RepVotesMajorPercent) %>%
+  # rename district variable name to match shapefile
+    rename(DISTRICT = district_num)
+
+# before joining dfs, check classes of variable to be merged on
+class(R_mi_2014$DISTRICT)
+class(cd114_mi$DISTRICT)
+
+# change class
+cd114_mi$DISTRICT <- as.numeric(cd114_mi$DISTRICT)
+
+# join election returns with shapefiles
+cd114_mi <- cd114_mi %>% left_join(R_mi_2014, by="DISTRICT")
+cd114_mi
+```
+
+*This blog is part of a series related to Gov 1347: Election Analytics, a course at [Harvard University](https://www.harvard.edu/) taught by Professor [Ryan D. Enos](http://ryandenos.com/)*.
+
+<br>
+
+From now until November 8, I will be updating this weekly blog series with my **2022 US midterm election prediction model**. For this first blog, I'll be exploring past election results to find any trends in the data. More specifically, I'll be diving into the state of **Michigan**.
+
+<br>
+
+# United States
+
+<br>
+
+Before focusing specifically on Michigan, I first examine the GOP two-party vote share margin for the 2010 midterm election.
+
+
+```{r}
+# plot
+plot_usmap(data = R_2010, regions = "states", values = "R_votemargin_st", labels = TRUE) + 
+  scale_fill_gradient(low = "white", high = "red", name = "GOP two-party vote share margin") +
+  theme_void()
+```
+As determined by the key on the right, the GOP two-party vote share margin in Michigan seems to be closer to 0.5. This indicates that Michigan seems to have be a highly-contested state in 2010.
+
+<br>
+
+Next, I examine Michigan specifically, which has been a critical swing state in recent U.S. [presidential elections](https://www.270towin.com/states/Michigan). I do this in an attempt to answer the question as to whether the same can be said about midterm elections.  
+
+<br>
+
+```{r}
+ggplot() +
+geom_sf(data=cd114_mi,aes(fill=Rep_votes_pct),
+inherit.aes=FALSE,alpha=0.9) +
+scale_fill_gradient(low = "white", high = "black", limits=c(10,80), name = "Percentage of votes received by the GOP candidate") +
+theme_void() +
+theme(axis.title.x=element_blank(),
+axis.text.x=element_blank(),
+axis.ticks.x=element_blank(),
+axis.title.y=element_blank(),
+axis.text.y=element_blank(),
+axis.ticks.y=element_blank())
+``` 
+
+Here, as we focus on the state of Michigan, we can see the percentage of votes received by the GOP candidate for each district. Examining the district's political leaning is essential in understanding the political make-up for Michigan as a whole.
