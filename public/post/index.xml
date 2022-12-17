@@ -22,7 +22,19 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>http://example.org/post/economic-forces/</guid>
-      <description></description>
+      <description>This blog is part of a series related to Gov 1347: Election Analytics, a course at Harvard University taught by Professor Ryan D. Enos.
+From now until November 8, I will be updating this weekly blog series with my 2022 US midterm election prediction model. For this second blog, I explore national economic models as predictors for the incumbent party&amp;rsquo;s popular vote percentage in a given election year.
+Real Disposable Income Quarterly First, I examine the percent change in disposable income and how that correlates with the percentage of the votes that the incumbent party receives for each election year from 1964 to 2020.</description>
+    </item>
+    
+    <item>
+      <title>Polling</title>
+      <link>http://example.org/post/polling/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/post/polling/</guid>
+      <description>Comparing Midterm Forecasts ** FiveThirtyEight Model
+FiveThirtyEight utilizes three different versions of models: Lite, Classic, and Deluxe. These versions, however, can be considered to be layers that build on top of one another. For instance, the Lite version incorporates district-by-district polling (adjusted for house effects and other factors) and CANTOR, which is a system that infers results for districts with little or no polling from comparable districts that do have polling data available.</description>
     </item>
     
   </channel>

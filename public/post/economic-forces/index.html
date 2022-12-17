@@ -59,12 +59,75 @@
 
 		
 
-		
+		<p><em>This blog is part of a series related to Gov 1347: Election Analytics, a course at <a href="https://www.harvard.edu/">Harvard University</a> taught by Professor <a href="http://ryandenos.com/">Ryan D. Enos</a></em>.</p>
+<!-- raw HTML omitted -->
+<p>From now until November 8, I will be updating this weekly blog series with my <strong>2022 US midterm election prediction model</strong>. For this second blog, I explore national economic models as predictors for the incumbent party&rsquo;s popular vote percentage in a given election year.</p>
+<!-- raw HTML omitted -->
+<h1 id="real-disposable-income-quarterly">Real Disposable Income Quarterly</h1>
+<!-- raw HTML omitted -->
+<p>First, I examine the percent change in disposable income and how that correlates with the percentage of the votes that the incumbent party receives for each election year from 1964 to 2020.</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>The correlation is found to be:</p>
+<pre tabindex="0"><code>## 
+## Call:
+## lm(formula = H_incumbent_party_majorvote_pct ~ DSPIC_change_pct, 
+##     data = data2)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -6.3857 -2.1887  0.4447  2.2152  5.8840 
+## 
+## Coefficients:
+##                  Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)       52.5781     0.7597  69.210   &lt;2e-16 ***
+## DSPIC_change_pct  -0.7964     0.6085  -1.309    0.201    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 3.4 on 29 degrees of freedom
+## Multiple R-squared:  0.05577,	Adjusted R-squared:  0.02321 
+## F-statistic: 1.713 on 1 and 29 DF,  p-value: 0.2009
+</code></pre><pre tabindex="0"><code>## [1] 0.05576812
+</code></pre><p>The following graph shows the incumbent party vote percentage when compared to the predicted incumbent party vote percentage for each year:</p>
+<!-- raw HTML omitted -->
+<p>Below is the mean out-of-sample residuals, which validates our model:</p>
+<!-- raw HTML omitted -->
+<pre tabindex="0"><code>## [1] 1.159056
+</code></pre><p>Next, I examine the percent change in unemployment rate and how that correlates with the percentage of the votes that the incumbent party receives for each election year from 1964 to 2020.</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>The correlation is found to be:</p>
+<pre tabindex="0"><code>## 
+## Call:
+## lm(formula = H_incumbent_party_majorvote_pct ~ UNRATE, data = data3)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -7.9681 -1.4497  0.6175  2.3157  6.6103 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  47.4800     1.9400  24.475   &lt;2e-16 ***
+## UNRATE        0.7466     0.3254   2.294   0.0279 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 3.18 on 35 degrees of freedom
+## Multiple R-squared:  0.1307,	Adjusted R-squared:  0.1059 
+## F-statistic: 5.263 on 1 and 35 DF,  p-value: 0.0279
+</code></pre><pre tabindex="0"><code>## [1] 0.1307167
+</code></pre><!-- raw HTML omitted -->
+<p>Below is the mean out-of-sample residuals:</p>
+<!-- raw HTML omitted -->
+<pre tabindex="0"><code>## [1] 1.084569
+</code></pre>
 
 		
 	</div>
 
 	<div class="pagination">
+		<a href="/post/polling/" class="left arrow">&#8592;</a>
 		<a href="/post/introduction/" class="right arrow">&#8594;</a>
 
 		<a href="#" class="top">Top</a>
@@ -75,7 +138,7 @@
         		<footer>
 			
 			<span>
-			&copy; <time datetime="2022-12-16 21:23:22.773563 -0500 EST m=&#43;0.422487615">2022</time> . Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			&copy; <time datetime="2022-12-16 21:26:48.843442 -0500 EST m=&#43;0.399200619">2022</time> . Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
 			</span>
 		</footer>
 

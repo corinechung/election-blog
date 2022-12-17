@@ -6,3 +6,214 @@ slug: []
 categories: []
 tags: []
 ---
+```{r setup, include=FALSE}
+# Hiding all code output
+knitr::opts_chunk$set(echo = FALSE)
+# Loading libraries
+library(tidyverse)
+library(sf)
+library(plotly)
+# load usmap
+# install.packages('plot_usmap')
+library(usmap)
+
+## make map of vote share by state and CD
+
+# start with 114th congress - 2014 election
+# required packages 
+require(tidyverse)
+require(ggplot2)
+require(sf)
+
+library(readr)
+popvote <- read_csv('house_popvote_seats.csv') 
+                                                   
+economy <- read_csv('GDP_quarterly.csv')
+
+rdi <- read_csv('RDI_quarterly.csv')
+
+unemp <- read_csv('unemployment_national_quarterly_final.csv')
+
+data <- left_join(rdi, popvote, by = 'year')
+
+data1 <- left_join(unemp, popvote, by = 'year')
+
+# drop NAs (only election years)
+data <- data %>%
+  drop_na()
+
+data1 <- data1 %>%
+  drop_na()
+
+# new df
+data2 <- data %>% 
+    select('year', 'winner_party', 'H_incumbent_party', 'H_incumbent_party_majorvote_pct', 
+           'quarter_cycle', 'DSPIC_change_pct') %>%
+    filter(quarter_cycle == 8)  
+
+data3 <- data1 %>% 
+    select('year', 'winner_party', 'H_incumbent_party', 'H_incumbent_party_majorvote_pct', 
+           'quarter_cycle', 'UNRATE') %>%
+    filter(quarter_cycle == 4)  
+```
+
+*This blog is part of a series related to Gov 1347: Election Analytics, a course at [Harvard University](https://www.harvard.edu/) taught by Professor [Ryan D. Enos](http://ryandenos.com/)*.
+
+<br>
+
+From now until November 8, I will be updating this weekly blog series with my **2022 US midterm election prediction model**. For this second blog, I explore national economic models as predictors for the incumbent party's popular vote percentage in a given election year.
+
+<br>
+
+# Real Disposable Income Quarterly
+
+<br> 
+
+First, I examine the percent change in disposable income and how that correlates with the percentage of the votes that the incumbent party receives for each election year from 1964 to 2020.
+
+```{r, echo=FALSE, eval=TRUE, fig.width=5, fig.height=3, out.width = '60%', fig.align='center'}
+data2 %>%
+  ggplot(aes(x=DSPIC_change_pct, y=H_incumbent_party_majorvote_pct,
+             label=year)) + 
+    geom_text() +
+    geom_hline(yintercept=50, lty=2) +
+    geom_vline(xintercept=0.01, lty=2) + # median
+    xlab("Q8-Q7 percent change in disposable income") +
+    ylab("Incumbent party PV") +
+    theme_bw() +
+    theme(
+      axis.text = element_text(size = 10)
+    )
+```
+We can see that for most of the time, a positive percent change in disposable income results in the incumbent party receiving more votes.
+
+<br>
+
+The correlation is found to be:
+
+```{r, echo = FALSE, eval=FALSE}
+cor(data2$DSPIC_change_pct, data2$H_incumbent_party_majorvote_pct)
+```
+
+```{r, echo=FALSE}
+lm_rdi <- lm(H_incumbent_party_majorvote_pct ~ DSPIC_change_pct, 
+              data = data2)
+# # lm_rdi <- lm(H_incumbent_party_majorvote_pct ~ DSPIC_change_pct, 
+#              data = data2)
+
+```
+
+```{r, echo=FALSE, eval = TRUE}
+summary(lm_rdi)
+```
+
+```{r}
+summary(lm_rdi)$r.squared
+```
+
+The following graph shows the incumbent party vote percentage when compared to the predicted incumbent party vote percentage for each year:
+
+```{r, fig.width=6, fig.height=4, out.width = '70%', fig.align='center'}
+# GDP
+plot(data2$year, data2$H_incumbent_party_majorvote_pct, 
+     type="l",
+     main="true Y (line), predicted Y (dot) for each year")
+points(data2$year, predict(lm_rdi, data2))
+```
+
+```{r}
+outsamp_errors <- sapply(1:1000, function(i){
+    years_outsamp <- sample(data2$year, 8)
+  outsamp_mod <- lm(H_incumbent_party_majorvote_pct ~ 
+                      DSPIC_change_pct,
+                  data2[!(data2$year %in% years_outsamp),])
+  outsamp_pred <- predict(outsamp_mod,
+                newdata = data2[data2$year %in% years_outsamp,])
+  outsamp_true <- data2$H_incumbent_party_majorvote_pct[data2$year 
+                                                       %in% years_outsamp]
+  mean(outsamp_pred - outsamp_true)
+})
+```
+
+Below is the mean out-of-sample residuals, which validates our model:
+
+```{r, echo=FALSE, message=FALSE, fig.width=6, fig.height=3, out.width = '70%', fig.align='center'}
+hist(outsamp_errors,
+     xlab = "",
+     main = "mean out-of-sample residual\n(1000 runs of cross-validation)")
+```
+```{r}
+mean(abs(outsamp_errors))
+```
+
+Next, I examine the percent change in unemployment rate and how that correlates with the percentage of the votes that the incumbent party receives for each election year from 1964 to 2020.
+
+```{r, echo=FALSE, eval=TRUE, fig.width=5, fig.height=3, out.width = '60%', fig.align='center'}
+data3 %>%
+  ggplot(aes(x=UNRATE, y=H_incumbent_party_majorvote_pct,
+             label=year)) + 
+    geom_text() +
+    geom_hline(yintercept=50, lty=2) +
+    geom_vline(xintercept=0.01, lty=2) + # median
+    xlab("Q8-Q7 unemployment rate") +
+    ylab("Incumbent party PV") +
+    theme_bw() +
+    theme(
+      axis.text = element_text(size = 10)
+    )
+```
+There does not seem to be a strong correlation between unemployment rate and the percentage of votes the incumbent party receives. This model seems to go against intuition, since one would suppose that more unemployment would cause constituents to be unhappy with the current government.
+
+<br>
+
+The correlation is found to be:
+
+```{r, eval=FALSE}
+cor(data3$UNRATE, data3$H_incumbent_party_majorvote_pct)
+```
+
+```{r, echo=FALSE}
+lm_unr <- lm(H_incumbent_party_majorvote_pct ~ UNRATE, 
+              data = data3)
+```
+
+```{r, echo=FALSE, eval = TRUE}
+summary(lm_unr)
+```
+
+```{r}
+summary(lm_unr)$r.squared
+```
+
+```{r, fig.width=6, fig.height=4, out.width = '70%', fig.align='center'}
+# GDP
+plot(data3$year, data3$H_incumbent_party_majorvote_pct, 
+     type="l",
+     main="true Y (line), predicted Y (dot) for each year")
+points(data3$year, predict(lm_unr, data3))
+```
+
+```{r}
+outsamp_errors <- sapply(1:1000, function(i){
+    years_outsamp <- sample(data3$year, 8)
+  outsamp_mod <- lm(H_incumbent_party_majorvote_pct ~ 
+                      UNRATE,
+                  data3[!(data3$year %in% years_outsamp),])
+  outsamp_pred <- predict(outsamp_mod,
+                newdata = data3[data3$year %in% years_outsamp,])
+  outsamp_true <- data3$H_incumbent_party_majorvote_pct[data3$year 
+                                                       %in% years_outsamp]
+  mean(outsamp_pred - outsamp_true)
+})
+```
+
+Below is the mean out-of-sample residuals:
+
+```{r, echo=FALSE, message=FALSE, fig.width=6, fig.height=3, out.width = '70%', fig.align='center'}
+hist(outsamp_errors,
+     xlab = "",
+     main = "mean out-of-sample residual\n(1000 runs of cross-validation)")
+```
+```{r}
+mean(abs(outsamp_errors))
+```
